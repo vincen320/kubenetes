@@ -1,0 +1,17 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: external-service
+  labels:
+    label-key1: label-value1
+spec:
+  type: ExternalName #BEDANYA DSINI
+  externalName: example.com
+  ports:
+    - port: 80
+#spec.type: (service)
+# 1. ClusterIP: Ekspos Service didalam Internal Kubernetes Cluster
+# 2. ExternalName: Memetakan Service ke externalName (misalnya: example.com)
+#====untuk mengekspose service
+# 3. NodePort: Mengekspos Service pada setiap IP node dan port yang sama. Kita dapat mengakses Service dengan tipe ini, dari luar cluster melalui <NodeIP>:<NodePort(port servicenya(?))>.
+# 4. LoadBalancer: Mengekspos Service secara eksternal dengan menggunakan LoadBalancer yang disediakan oleh penyedia layanan cloud. (fitur peningkatan dari NodePort)

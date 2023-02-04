@@ -1,0 +1,32 @@
+apiVersion: v1
+kind: ReplicationController
+metadata:
+  name: nginx-rc
+  labels: #LABEL DAN ANNOTATION UNTUK REPLICATION CONTROLLER, BUKAN POD
+    label-key1: label-value1
+  annotations:
+    annotation-key1: annotation-value1
+spec:
+  replicas: 3
+  selector: #YANG PENTING!!
+    app: nginx #PASTIKAN SAMA DENGAN LABEL POD(2), AGAR DAPAT BERHASIL BIKIN POD
+  template: #POD TEMPLATE
+    metadata:
+      name: nginx #SAMA REPLICATION CONTROLLER AKAN DITAMBAH UNIQUE CODE DIAKHIRNYA KARENA INI POD BENTUKNYA TEMPLATE
+      labels:
+        app: nginx #DENGAN INI(2)
+    spec:
+      containers:
+        - name: nginx
+          image: nginx:1.23.1-alpine #Harus tau si Image running di PORT berapa
+          ports:
+            - containerPort: 80
+          # readLinessProbe:
+          #   httpGet:
+          #     path: /  #masukkan url yang ada di container tsb yang bisa di hit (mksdnya biasanya kl bkin webservice kita bikin endpoint utk cek health, bisa kesana juga)
+          #     port: 80
+          #     initialDelaySeconds: 0
+          #     periodSeconds: 10
+          #     failureThreshold: 3
+          #     successThreshold: 1
+          #     timeoutSeconds: 1

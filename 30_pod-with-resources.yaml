@@ -1,0 +1,50 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: go-web
+  labels:
+    name: go-web
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      name: go-web #HARUS SAMA DENGAN  template/labels
+  template:
+    metadata:
+      name: go-web
+      labels:
+        name: go-web #INI BAGIAN YANG PENTING DICARI OLEH MATCHLABELS
+    spec:
+      # volumes:
+      #   - name: volume-name
+      #     emptyDir: {}
+      containers:
+        - name: go-web
+          image: vincen320/go-web
+          ports:
+            - containerPort: 3000 #go-web jalan di port 3000
+          resources: #TAMBAHNYA DSINI, DI LEVEL CONTAINER UNTUK PENGATURAN RESOURCESNYA, DAN TIAP CONTAINER BISA BEDA2 PENGATURAN RESOURCESNYA
+            requests: #REQUEST ->KUBERNETES MENGARANSI BAKAL DAPET NODE DENGAN SPEC BEGINI, apabila tidak cukup/tidak dapat maka podnya tidak dijalankan(pending)
+              # milli core
+              cpu: 200m # berarti butuh 0.2Core * jumlahReplica(dalam kasus ini 3) = 0.6 core ||1000m=1CORE
+              # mebibyte , 1 Memibyte = 1.04858 Megabyt
+              memory: 500Mi # berarti butuh 500Mi * jumlahReplica(dalam kasus ini 3) = 1500Mi
+            limits: #MEMBATASI RESOURCES YANG DIGUNAKAN/MEMASTIKAN RESOURCE TIDAK AKAN MELEWATI RESOURCE SEDEMIKIAN
+              # milli core
+              cpu: 200m
+              # mebibyte
+              memory: 500Mi
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: go-web-service
+spec:
+  type: NodePort
+  selector:
+    name: go-web
+  ports:
+    - port: 3000
+      targetPort: 3000
+      nodePort: 30001

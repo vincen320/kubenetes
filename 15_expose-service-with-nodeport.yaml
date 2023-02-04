@@ -1,0 +1,36 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: nginx-service
+  labels:
+    label-key1: label-value1
+spec:
+  type: NodePort #BEDA DSINI
+  selector:
+    name: nginx # JANGAN LUPA INI HARUS SAMA DENGAN LABEL POD
+  ports:
+    - port: 80 #PORT buat servicenya
+      targetPort: 80 #PORT UNTUK AKSES PODNYA, jadi akses ke servicenya yaitu 8080 tapi nanti si service akan ngeakses ke port 80 di pod yang ditujunya(contohnya di nginx jalan di port 80 jadi diarahkan kesana)
+      nodePort: 30001 #jangan lupa tambahin ini, port yang diekspos oleh node(dalam hal ini minikube), node bisa berupa vm
+#catatan targetPort lanjutan diatas: Ingat karena service seperti gerbang/gateway, jadi si service harus ngeakses suatu POD
+---
+apiVersion: apps/v1
+kind: ReplicaSet
+metadata:
+  name: nginx
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      name: nginx #JANGAN LUPA INI HRS SAMA DGN TEMPLATE.METADATA.LABELS(VIN#23)
+  template:
+    metadata:
+      name: nginx
+      labels:
+        name: nginx #BAGIAN YANG PENTING > LABELNYA || HARUS SAMA JUGA DENGAN SPEC.SELECTOR.MATCHLABELS(VIN#23)
+    spec:
+      containers:
+        - name: nginx
+          image: nginx:1.23.1-alpine
+          ports:
+            - containerPort: 80

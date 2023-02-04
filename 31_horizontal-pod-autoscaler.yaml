@@ -1,0 +1,27 @@
+apiVersion: autoscaling/v2 #UDA V2
+kind: HorizontalPodAutoscaler #SAAT PRODUCTION SUDAH PASTI MENGGUNAKAN HPA INI + DEPLOYMENT (CONTOH DI FILE 31.1)
+metadata:
+  name: hpa-name
+  # labels:
+  # annotations:
+spec:
+  minReplicas: 3 #jika saat deployment buat 5, oleh HPA akan dibuat 3
+  maxReplicas: 5 #disini saat traffic tinggi, baru dinaikkan jadi 5
+  scaleTargetRef: #Targetnya kemana
+    apiVersion: apps/v1
+    kind: Deployment
+    name: deployment-name
+  metrics: #METRICS HPANYA TRIGGER LEWAT APA
+    - type: Resource
+      resource:
+        name: cpu #Trigger lewat CPU
+        target:
+          type: Utilization
+          averageUtilization: 70 #Kalau rata-rata penggunaan CPU leawt 70%, maka akan mengtrigger HPA
+    - type: Resource
+      resource:
+        name: memory #Trigger lwat Memori (perhatikan bhasa pemogramannya bisa manage memroi dengan benar, kalau tidak yakin dengan bahasa pemogramannya pakai cpu saja)
+        target:
+          type: Utilization
+          averageUtilization: 70 #Kalau penggunaan memori lebih dari 70%, maka akan ngetrigger HPA
+          #ada 1.averageUtilization, 2.value, 3.averageValue

@@ -1,0 +1,64 @@
+apiVersion: apps/v1
+kind: Deployment #INI DEPLOYMENTNYA (VIN#99)
+metadata:
+  name: go-web #(#VIN77)
+  labels:
+    name: go-web
+spec:
+  # replicas: 3 # TIDAK PAKAI KARENA DI SET DI HPA(HORIZONTAL-POD-AUTOSCALER) (SEE LINE 45)
+  selector:
+    matchLabels:
+      name: go-web #HARUS SAMA DENGAN  template/labels
+  template:
+    metadata:
+      name: go-web
+      labels:
+        name: go-web #INI BAGIAN YANG PENTING DICARI OLEH MATCHLABELS
+    spec:
+      # volumes:
+      #   - name: volume-name
+      #     emptyDir: {}
+      containers:
+        - name: go-web
+          image: vincen320/go-web:1
+          ports:
+            - containerPort: 3000 #go-web jalan di port 3000
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: go-web-service
+spec:
+  type: NodePort
+  selector:
+    name: go-web
+  ports:
+    - port: 3000
+      targetPort: 3000
+      nodePort: 30001
+---
+apiVersion: autoscaling/v2 #UDA V2
+kind: HorizontalPodAutoscaler #INI HPA NYA (VIN#99)
+metadata:
+  name: hpa-name
+spec:
+  minReplicas: 3 #jika saat deployment buat 5, oleh HPA akan dibuat 3
+  maxReplicas: 10 #disini saat traffic tinggi, baru dinaikkan jadi 5
+  scaleTargetRef: #Targetnya kemana
+    apiVersion: apps/v1
+    kind: Deployment # INI SET TARGET LISTENING HPA NYA KEMANA (VIN#99)
+    name: go-web #Namanya sepertinya harus sama dengan nama metadata.name Deployment (#VIN77)
+  metrics: #METRICS HPANYA TRIGGER LEWAT APA
+    - type: Resource
+      resource:
+        name: cpu #Trigger lewat CPU
+        target:
+          type: Utilization
+          averageUtilization: 70 #Kalau rata-rata penggunaan CPU leawt 70%, maka akan mengtrigger HPA
+    - type: Resource
+      resource:
+        name: memory #Trigger lwat Memori (perhatikan bhasa pemogramannya bisa manage memroi dengan benar, kalau tidak yakin dengan bahasa pemogramannya pakai cpu saja)
+        target:
+          type: Utilization
+          averageUtilization: 70 #Kalau penggunaan memori lebih dari 70%, maka akan ngetrigger HPA
+          #ada 1.averageUtilization, 2.value, 3.averageValue

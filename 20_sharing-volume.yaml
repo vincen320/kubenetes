@@ -1,0 +1,46 @@
+apiVersion: apps/v1
+kind: ReplicaSet
+metadata:
+  name: nginx
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      name: nginx
+  template: #INI MAKSUDNYA TEMPLATE POD
+    metadata:
+      name: nginx
+      labels:
+        name: nginx
+    spec:
+      volumes: #kalau replicaset, VOLUMENYA BUAT DI TEMPLATE POD NYA || INI ADA 1 VOLUME TAPI DIPAKAI DI 2 (VIN#15)
+        - name: html
+          emptyDir: {}
+      containers:
+        - name: go-writer
+          image: vincen320/go-writer
+          volumeMounts:
+            - mountPath: /app/html
+              name: html #mounting pertama, volume yg sama (VIN#15)
+        - name: nginx
+          image: nginx:1.23.1-alpine
+          ports:
+            - containerPort: 80
+          volumeMounts:
+            - mountPath: /usr/share/nginx/html #INI ADALAH LOKASI HTML KALAU AKSES NGINX (YANG WELCOME TO NGINX)
+              name: html #mounting kedua, volume yg sama (VIN#15)
+#SAAT container go-writer ngewrite ke /app/html (yangmana terhubung ke volume[*mungkin tewrite di volume jg]) maka
+#container nginx yang harus mengakses dengan mountPath demikian, akan membaca file melalui volume(?)
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: nginx-service
+spec:
+  type: NodePort
+  selector:
+    name: nginx
+  ports:
+    - port: 8080 #PORT buat servicenya
+      targetPort: 80 #PORT UNTUK AKSES PODNYA, jadi akses ke servicenya yaitu 8080 tapi nanti si service akan ngeakses ke port 80 di pod yang ditujunya(contohnya di nginx jalan di port 80 jadi diarahkan kesana)
+      nodePort: 30001

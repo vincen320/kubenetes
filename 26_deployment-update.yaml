@@ -1,0 +1,25 @@
+apiVersion: apps/v1
+kind: Deployment #STRUKTUR MIRIP REPLICA SET
+metadata:
+  name: go-web #KYKNY YG PENTING NAMA ININYA SAMA WAKTU UPDATE DEPLOYMENT
+  labels:
+    name: go-web
+  annotations:
+    annotation-key1: annotation-value1
+spec:
+  #revisionHistoryLimit: 10 #Default=10 kalau tidak diset | Akan menyimpan history replicaSet yang hilang(?)
+  replicas: 3
+  selector:
+    matchLabels:
+      name: go-web #HARUS SAMA DENGAN  template/labels
+  template:
+    metadata:
+      name: go-web
+      labels:
+        name: go-web #INI BAGIAN YANG PENTING DICARI OLEH MATCHLABELS
+    spec:
+      containers:
+        - name: go-web
+          image: vincen320/go-web:2 #UPDATE DISNI!!!!
+          ports:
+            - containerPort: 3000 #go-web jalan di port 3000

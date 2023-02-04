@@ -1,0 +1,26 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: go-job
+  labels:
+    label-key1: label-value1
+  annotations:
+    annotation-key1: annotation-value1
+spec: #PENTING NIH
+  completions: 5 #BERAPA BANYAK JOB YANG HARUS DIJALANKAN SAMPAI DIANGGAP JOBNYA SELESAI (DEFAULT=1), JIKA 5, BERARTI JOBNYA JALAN 5X
+  parallelism: 2 #BERAPA BANYAK POD YANG JALAN SATU WAKTU (DEFAULT=1), JIKA 2 BRARTI PODNYA AKAN NYALA SEBANYAK 5(dari completion)/2(pararel)= 2(hasil) + 1(sisa) = 3 kali
+  # selector: ERROR (?) atau karena gaada replica, gatau juga
+  #   matchLabels:
+  #     label-key1: label-value1
+  template:
+    metadata:
+      name: pod-name
+      labels:
+        label-key1: label-value1
+    spec:
+      restartPolicy: Never #WAJIB never, kalau = "ALWAYS", NANTI SAAT SELESAI/MATI, MALAH HIDUP LAGI
+      containers:
+        - name: go-job
+          image: vincen320/go-job
+          # ports:
+          #   -containerPort: 80

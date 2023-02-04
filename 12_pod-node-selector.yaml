@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: nginx
+spec:
+  nodeSelector: #Copas dari 1_buat-pod, terus tambah ini (sebelumnya tambah label dulu di node nya) >> kubectl label node "namanode" key=value
+    gpu: "true" #tambah ini
+  containers:
+    - name: nginx
+      image: nginx:1.23.1-alpine
+      ports:
+        - containerPort: 80

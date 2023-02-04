@@ -1,0 +1,46 @@
+apiVersion: apps/v1 #VERSIONNYA BERBEDA
+kind: ReplicaSet
+metadata:
+  name: nginx-rs #NAMA REPLICA SET TIDAK BISA ADA YANG SAMA, harusnya begitu pula dengan replication controller
+  labels:
+    label-key1: label-value1
+  annotations:
+    annotation-key1: annotation-value1
+spec:
+  replicas: 3
+  selector:
+    # matchLabels: #BISA DIKOMBINASIKAN DENGAN MATCHEXPRESSION kalau MAU
+    #   app: nginx
+    matchExpressions: #BISA MENAMBAHKAN BEBERAPA EKSPRESI. 1.OPERASI(In, NotIn, Exists, NotExists);
+      - key: app
+        operator: In
+        values:
+          - nginx #ARRAY NI BOS, BISA BNYAK
+      - key: env
+        operator: In
+        values:
+          - prod
+          - qa
+          - dev
+  template:
+    metadata:
+      name: nginx #NAMA POD
+      labels:
+        app: nginx #PASTIKAN SAMA DENGAN MATCHEXPRESSION
+        env: prod
+    spec:
+      containers:
+        - name: nginx
+          image: nginx:1.23.1-alpine #Harus tau si Image running di PORT berapa
+          ports:
+            - containerPort: 80
+              # readinessProbe:
+              #   httpGet:
+              #     path: / #masukkan url yang ada di container tsb yang bisa di hit (mksdnya biasanya kl bkin webservice kita bikin endpoint utk cek health, bisa kesana juga)
+              #     port: 80
+              #   initialDelaySeconds: 0
+              #   periodSeconds: 10
+              #   failureThreshold: 3
+              #   successThreshold: 1
+              #   timeoutSeconds: 1
+#SAMA SEPERTI REPLICATION-CONTROLLER(DARI FITUR DLL SMUANYA) TAPI BEDA DI SELECTORNYA

@@ -1,0 +1,53 @@
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: go-stateful-volume #(#VIN12)
+spec:
+  accessModes:
+    - ReadWriteOnce
+  capacity:
+    storage: 5Gi #jangan sampai lebih kecil dari jumlah (replicas * volumeClaim.spec.resource.request.storage)
+  hostPath:
+    path: /data/location
+
+---
+apiVersion: apps/v1
+kind: StatefulSet #CARA BUATNYA SAMA SEPERTI REPLICA SET
+metadata:
+  name: go-stateful
+  labels:
+    name: go-stateful
+spec:
+  # https://github.com/kubernetes/kubernetes/issues/69608
+  serviceName: go-stateful-service #bug harus punya in, padahal kalau tidak ada service ini juga tetap jalan2 saja (ini bahkan service ini tidak ada)
+  replicas: 3
+  selector:
+    matchLabels:
+      name: go-stateful #kalau tidak salah, sama kan dengan label pod, dalam hal ini berarti label template podnya (#VIN56)
+  volumeClaimTemplates: #TEMPLATE UNTUK MEMBUAT VOLUME-CLAIM
+    - metadata:
+        name: go-stateful-volume-claim #NAMA INI SAMA DENGAN metadata.name PersistentVolume + claims(?) (#VIN12) ||(#VIN11)
+      spec:
+        accessModes:
+          - ReadWriteOnce
+        volumeMode: Filesystem #atau block
+        resources:
+          requests:
+            storage: 1Gi #1 Giga bit, tiap pod akan punya 1Giga bit
+  template: #TEMPLATE PODNYA
+    metadata:
+      name: go-stateful
+      labels:
+        name: go-stateful #(#VIN56)
+    spec:
+      containers:
+        - name: go-stateful
+          image: vincen320/go-stateful
+          env: #ambil environment
+            - name: POD_NAME
+              valueFrom: #DOWNWARD-API
+                fieldRef:
+                  fieldPath: metadata.name
+          volumeMounts:
+            - mountPath: /app/data #ini kykny harusny /app/html deh
+              name: go-stateful-volume-claim #PASTIKAN SAMA DENGAN  spec.volumeClaimTemplates.metadata.name StatefulSet (#VIN11)

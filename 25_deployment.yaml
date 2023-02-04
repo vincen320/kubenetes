@@ -1,0 +1,48 @@
+apiVersion: apps/v1
+kind: Deployment #STRUKTUR MIRIP REPLICA SET
+metadata:
+  name: go-web
+  labels:
+    name: go-web
+  annotations:
+    annotation-key1: annotation-value1
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      name: go-web #HARUS SAMA DENGAN  template/labels
+  template:
+    metadata:
+      name: go-web
+      labels:
+        name: go-web #INI BAGIAN YANG PENTING DICARI OLEH MATCHLABELS
+    spec:
+      containers:
+        - name: go-web
+          image: vincen320/go-web:1
+          ports:
+            - containerPort: 3000 #go-web jalan di port 3000
+          # readinessProbe:
+          #   httpGet:
+          #     path: /
+          #     port: 80
+          #   initialDelaySeconds: 0
+          #   periodSeconds: 10
+          #   failureThreshold: 3
+          #   successThreshold: 1
+          #   timeoutSeconds: 1
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: go-web-service
+spec:
+  type: NodePort
+  selector:
+    name: go-web # JANGAN LUPA INI HARUS SAMA DENGAN LABEL POD
+  ports:
+    - port: 3000 #PORT buat servicenya
+      targetPort: 3000 #PORT UNTUK AKSES PODNYA, jadi akses ke servicenya yaitu 8080 tapi nanti si service akan ngeakses ke port 80 di pod yang ditujunya(contohnya di nginx jalan di port 80 jadi diarahkan kesana)
+      nodePort: 30001 #jangan lupa tambahin ini, port yang diekspos oleh node(dalam hal ini minikube), node bisa berupa vm
+#catatan targetPort lanjutan diatas: Ingat karena service seperti gerbang/gateway, jadi si service harus ngeakses suatu POD

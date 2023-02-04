@@ -1,0 +1,43 @@
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: go-writer-volume #(#VIN12)
+spec:
+  accessModes: #Ada banyak Modenya: 1.ReadWriteOnce, ReadWriteMany, ReadOnlyMany
+    - ReadWriteOnce
+  capacity:
+    storage: 5Gi #5 Gigabit
+  hostPath: #ini isinya kek AWS/Azure/GCE, pakai hostPath untuk belajar
+    path: /data/location
+
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: go-writer-volume-claim #namanya harus sama dengan metadata.name PersistentVolume, trs tambh claim(?) (#VIN12)
+spec:
+  accessModes:
+    - ReadWriteOnce
+  volumeMode: Filesystem #atau Block
+  resources:
+    requests:
+      storage: 1Gi # 1 Gigabit
+
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: go-writer
+  labels:
+    name: go-writer
+spec:
+  volumes:
+    - name: html
+      persistentVolumeClaim: #BEDA DSINI
+        claimName: go-writer-volume-claim #pakai yang claim
+  containers:
+    - name: go-writer
+      image: vincen320/go-writer
+      volumeMounts:
+        - mountPath: /app/html
+          name: html

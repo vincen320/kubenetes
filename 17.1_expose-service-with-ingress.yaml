@@ -1,0 +1,60 @@
+apiVersion: apps/v1
+kind: ReplicaSet
+metadata:
+  name: nginx
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      name: nginx #JANGAN LUPA INI HRS SAMA DGN TEMPLATE.METADATA.LABELS(VIN#23)
+  template:
+    metadata:
+      name: nginx
+      labels:
+        name: nginx #BAGIAN YANG PENTING > LABELNYA || HARUS SAMA JUGA DENGAN SPEC.SELECTOR.MATCHLABELS(VIN#23)
+    spec:
+      containers:
+        - name: nginx
+          image: nginx:1.23.1-alpine
+          ports:
+            - containerPort: 80
+#REPLICA SET SPT BIASA
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: nginx-service
+spec:
+  selector:
+    name: nginx #HARUS SAMA DENGAN PODnya
+  ports:
+    - port: 80 #PORT buat servicenya
+      targetPort: 80 #PORT UNTUK AKSES PODNYA, jadi akses ke servicenya yaitu 8080 tapi nanti si service akan ngeakses ke port 80 di pod yang ditujunya(contohnya di nginx jalan di port 80 jadi diarahkan kesana)
+#catatan targetPort lanjutan diatas: Ingat karena service seperti gerbang/gateway, jadi si service harus ngeakses suatu POD
+#BERARTI INI CLUSTERIP KARENA TYPENYA TIDAK DITENTUKAN, karena yang diexpose nanti ada si ingressnya bukan si service
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: nginx-ingress
+  labels:
+    name: nginx-ingress
+spec:
+  rules: # YANG PENTING DISINI
+    - host: nginx.vincen.local
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: nginx-service
+                port:
+                  number: 80
+          # - path: /service2
+          #   pathType: Prefix
+          #   backend:
+          #     service:
+          #       name: nginx-service2
+          #       port:
+          #         number: 80
